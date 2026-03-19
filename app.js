@@ -4,43 +4,69 @@ const navLinks = document.getElementById("navLinks");
 const heroCenter = document.getElementById("heroCenter");
 const heroTerminal = document.querySelector(".hero-terminal");
 const heroLayout = document.getElementById("heroLayout");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
+if (heroLayout) {
+  heroLayout.classList.add("ready");
+}
 
 window.addEventListener("scroll", () => {
-  nav.classList.toggle("scrolled", window.scrollY > 24);
+  if (nav) {
+    nav.classList.toggle("scrolled", window.scrollY > 24);
+  }
+  if (!heroCenter || prefersReducedMotion) {
+    return;
+  }
   const depth = Math.min(window.scrollY / 420, 1);
   heroCenter.style.transform = `translateY(${depth * 42}px)`;
   heroCenter.style.opacity = String(1 - depth * 0.55);
 });
 
-navToggle.addEventListener("click", () => {
-  navLinks.classList.toggle("open");
-  document.body.classList.toggle("nav-open", navLinks.classList.contains("open"));
-});
-
-navLinks.querySelectorAll("a").forEach((a) => {
-  a.addEventListener("click", () => {
-    navLinks.classList.remove("open");
-    document.body.classList.remove("nav-open");
+if (navToggle && navLinks) {
+  navToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("open");
+    document.body.classList.toggle("nav-open", navLinks.classList.contains("open"));
   });
-});
+}
 
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in");
-      }
+if (navLinks) {
+  navLinks.querySelectorAll("a").forEach((a) => {
+    a.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+      document.body.classList.remove("nav-open");
     });
-  },
-  { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-);
+  });
+}
 
-document.querySelectorAll(".reveal").forEach((el, i) => {
-  el.style.transitionDelay = `${Math.min(i * 65, 260)}ms`;
-  revealObserver.observe(el);
-});
+const revealEls = document.querySelectorAll(".reveal");
+
+if ("IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+        }
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+  );
+
+  revealEls.forEach((el, i) => {
+    if (!prefersReducedMotion) {
+      el.style.transitionDelay = `${Math.min(i * 65, 260)}ms`;
+    }
+    revealObserver.observe(el);
+  });
+} else {
+  revealEls.forEach((el) => el.classList.add("in"));
+}
 
 document.querySelectorAll(".card").forEach((card) => {
+  if (isCoarsePointer || prefersReducedMotion) {
+    return;
+  }
   card.addEventListener("mousemove", (event) => {
     const rect = card.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -50,7 +76,7 @@ document.querySelectorAll(".card").forEach((card) => {
   });
 });
 
-if (heroTerminal) {
+if (heroTerminal && !isCoarsePointer && !prefersReducedMotion) {
   heroTerminal.addEventListener("mousemove", (event) => {
     const rect = heroTerminal.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -145,8 +171,14 @@ async function pushLog(typed) {
 }
 
 async function streamLoop() {
-  for (let i = 0; i < 4; i += 1) {
+  const typedBootLines = prefersReducedMotion ? 0 : 4;
+
+  for (let i = 0; i < typedBootLines; i += 1) {
     await pushLog(true);
+  }
+
+  if (typedBootLines === 0 && heroLayout && heroLayout.classList.contains("boot")) {
+    setDockedState();
   }
 
   while (true) {
