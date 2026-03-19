@@ -34,6 +34,7 @@ body {
   line-height: 1.65;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  cursor: url("cursor-default.svg") 16 16, crosshair;
 }
 
 ::selection {
@@ -43,6 +44,16 @@ body {
 
 a {
   color: inherit;
+}
+
+a,
+button,
+.btn,
+.mini-link,
+.scroll-cue,
+.nav-toggle,
+.card {
+  cursor: url("cursor-action.svg") 6 5, pointer;
 }
 
 .container {
