@@ -115,6 +115,8 @@ nav.scrolled {
 
 .hero {
   min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,6 +135,16 @@ nav.scrolled {
   border-radius: 999px;
   filter: blur(55px);
   pointer-events: none;
+}
+
+.hero-stage::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  pointer-events: none;
+  background: radial-gradient(circle at 25% 20%, rgba(59, 201, 219, 0.08), transparent 36%),
+    radial-gradient(circle at 80% 78%, rgba(255, 61, 46, 0.08), transparent 34%);
+  filter: blur(18px);
 }
 
 .hero::before {
@@ -179,6 +191,16 @@ nav.scrolled {
   box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(255, 61, 46, 0.08);
   transform-style: preserve-3d;
   transition: transform 480ms cubic-bezier(0.22, 1, 0.2, 1), border-color 200ms ease, width 760ms cubic-bezier(0.22, 1, 0.2, 1);
+}
+
+.hero-terminal::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid rgba(59, 201, 219, 0.2);
+  box-shadow: 0 0 28px rgba(59, 201, 219, 0.13), inset 0 0 24px rgba(255, 61, 46, 0.08);
 }
 
 .hero-terminal:hover {
@@ -422,11 +444,20 @@ h1 span {
   background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.22) 100%);
 }
 
+.term-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, rgba(59, 201, 219, 0.08) 46%, transparent 100%);
+  transform: translateY(-100%);
+  animation: scanner 4.2s linear infinite;
+}
+
 .log-line {
   margin-bottom: 7px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: pre-wrap;
+  word-break: break-word;
   opacity: 0;
   transform: translateY(4px);
   animation: reveal 240ms ease forwards;
@@ -679,6 +710,15 @@ footer {
   }
 }
 
+@keyframes scanner {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
 @media (max-width: 980px) {
   .hero {
     min-height: auto;
@@ -752,6 +792,24 @@ footer {
   }
   .hero-terminal {
     width: min(980px, 98vw);
+  }
+  .hero-layout.boot.ready .hero-identity,
+  .hero-layout.docked.ready .hero-identity,
+  .hero-identity {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    pointer-events: auto;
+  }
+  .hero-layout {
+    grid-template-columns: 1fr;
+  }
+  .hero-terminal .term-body {
+    min-height: 220px;
+    max-height: 220px;
+  }
+  .log-line {
+    font-size: 0.74rem;
   }
   .scroll-cue {
     margin-top: 18px;

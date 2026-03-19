@@ -4,18 +4,31 @@ const navLinks = document.getElementById("navLinks");
 const heroCenter = document.getElementById("heroCenter");
 const heroTerminal = document.querySelector(".hero-terminal");
 const heroLayout = document.getElementById("heroLayout");
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
+
+function mediaMatch(query) {
+  if (!window.matchMedia) {
+    return false;
+  }
+  return window.matchMedia(query).matches;
+}
+
+const prefersReducedMotion = mediaMatch("(prefers-reduced-motion: reduce)");
+const isCoarsePointer = mediaMatch("(pointer: coarse)");
+const isSmallViewport = mediaMatch("(max-width: 820px)");
+const useStaticHeroLayout = prefersReducedMotion || isCoarsePointer || isSmallViewport;
 
 if (heroLayout) {
   heroLayout.classList.add("ready");
+  if (useStaticHeroLayout) {
+    setDockedState();
+  }
 }
 
 window.addEventListener("scroll", () => {
   if (nav) {
     nav.classList.toggle("scrolled", window.scrollY > 24);
   }
-  if (!heroCenter || prefersReducedMotion) {
+  if (!heroCenter || useStaticHeroLayout) {
     return;
   }
   const depth = Math.min(window.scrollY / 420, 1);
@@ -76,7 +89,7 @@ document.querySelectorAll(".card").forEach((card) => {
   });
 });
 
-if (heroTerminal && !isCoarsePointer && !prefersReducedMotion) {
+if (heroTerminal && !useStaticHeroLayout) {
   heroTerminal.addEventListener("mousemove", (event) => {
     const rect = heroTerminal.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
@@ -171,7 +184,7 @@ async function pushLog(typed) {
 }
 
 async function streamLoop() {
-  const typedBootLines = prefersReducedMotion ? 0 : 4;
+  const typedBootLines = useStaticHeroLayout ? 0 : 4;
 
   for (let i = 0; i < typedBootLines; i += 1) {
     await pushLog(true);
